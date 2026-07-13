@@ -210,10 +210,12 @@ def inference(args):
     print('trainable params in model: ', sum(p.numel() for p in model.parameters() if p.requires_grad), '\n')
     checkpoint = torch.load(args.checkpoint, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
+    model.eval()
     test_loader = DataLoader(test_data, batch_size=2, collate_fn=graph_only_collate)
     fingerprints_list = []
-    for i, batch in enumerate(test_loader):
-        fingerprints_list.append(model(batch))
+    with torch.no_grad():
+        for i, batch in enumerate(test_loader):
+            fingerprints_list.append(model(batch))
 
     path = os.path.join('dataset', f'fingerprints.pt')
     print(f'Saving predictions to {path}')
@@ -252,4 +254,3 @@ def get_arguments():
 if __name__ == '__main__':
     args = get_arguments()
     inference(args)
-
