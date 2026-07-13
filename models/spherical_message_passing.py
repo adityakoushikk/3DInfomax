@@ -1,7 +1,11 @@
 import torch
 from torch import nn
 from torch.nn import Linear
-from torch_geometric.nn.acts import swish
+try:
+    from torch_geometric.nn.acts import swish
+except ImportError:
+    def swish(x):
+        return x * torch.sigmoid(x)
 from torch_geometric.nn.inits import glorot_orthogonal
 from torch_geometric.nn import radius_graph
 from torch_scatter import scatter
