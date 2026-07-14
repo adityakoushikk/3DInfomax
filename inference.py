@@ -160,6 +160,7 @@ def parse_arguments():
     p.add_argument('--reuse_pre_train_data', type=bool, default=False, help='use all data instead of ignoring that used during pre-training')
     p.add_argument('--transfer_3d', type=bool, default=False, help='set true to load the 3d network instead of the 2d network')
     p.add_argument('--smiles_txt_path', type=str, default='dataset/inference_smiles.txt', help='')
+    p.add_argument('--output_path', type=str, default='dataset/fingerprints.pt', help='')
 
 
 
@@ -211,13 +212,16 @@ def inference(args):
     checkpoint = torch.load(args.checkpoint, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
-    test_loader = DataLoader(test_data, batch_size=32, collate_fn=graph_only_collate)
+    test_loader = DataLoader(test_data, batch_size=2, collate_fn=graph_only_collate)
     fingerprints_list = []
     with torch.no_grad():
         for i, batch in enumerate(test_loader):
             fingerprints_list.append(model(batch))
 
-    path = os.path.join('dataset', f'fingerprints.pt')
+    path = args.output_path
+    output_dir = os.path.dirname(path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     print(f'Saving predictions to {path}')
     torch.save({'fingerprints': torch.cat(fingerprints_list, dim=0)}, path)
 
